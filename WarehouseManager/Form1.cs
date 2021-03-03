@@ -77,6 +77,7 @@ namespace WarehouseManager
         {
             StartBtn();
 
+            #region Start without StartBtn()
             //var connectionString = ConfigurationManager.ConnectionStrings["default"].ConnectionString;
             //connStr = connectionString;
             //conn = new SqlConnection(connStr);
@@ -85,12 +86,14 @@ namespace WarehouseManager
             //QueryFunc();
             //comboBox1.SelectedIndex = 0;
 
-            
+
             //comboBox2.DataSource = products.Select(s=>s.ProductType).Distinct().ToList();
             //comboBox2.DisplayMember = "ProductType";
 
             //comboBox3.DataSource = products.Select(s => s.Supplier).Distinct().ToList();
             //comboBox3.DisplayMember = "Supplier";
+
+            #endregion
         }
 
         void QueryFunc()
