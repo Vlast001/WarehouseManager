@@ -17,7 +17,7 @@ namespace WarehouseManager
     {
         private string connStr { get; set; }
         private SqlConnection conn { get; set; }
-        private List<Product> products = new List<Product>();
+        private List<Product> products; //= new List<Product>();
 
         /// <summary>
         /// Метод заменющий создание еще одной формы ради окна подключения так как мне лень)
@@ -28,7 +28,7 @@ namespace WarehouseManager
             this.Height = 200;
             this.StartPosition = FormStartPosition.CenterScreen;
             Button btn = new Button();
-            btn.Text = "Установить подключение с бд склада";
+            btn.Text = "Установить подключение к бд склада";
 
             btn.Location = new Point(30, 75);
             btn.Size = new Size(200, 50);
@@ -44,8 +44,25 @@ namespace WarehouseManager
                     MessageBox.Show("Подключение установлено");
                     this.Location = new Point(350, 200);
                     Controls.Clear();
+
+
                     InitializeComponent();
+                    //this.Size = new Size(1036, 593);
+                    dataGridView1.Size = new Size(679, 265);
+                    this.dataGridView2.Size = new System.Drawing.Size(679, 146);
+
+                    products = new List<Product>();
+                    QueryFunc();
                     comboBox1.SelectedIndex = 0;
+                    
+
+
+                    comboBox2.DataSource = products.Select(u => u.ProductType).Distinct().ToList();
+                    comboBox2.DisplayMember = "ProductType";
+
+                    comboBox3.DataSource = products.Select(u => u.Supplier).Distinct().ToList();
+                    comboBox3.DisplayMember = "Supplier";
+
                 }
                 else
                 {
@@ -58,23 +75,22 @@ namespace WarehouseManager
 
         public Form1()
         {
-            //StartBtn();
+            StartBtn();
 
-
-            var connectionString = ConfigurationManager.ConnectionStrings["default"].ConnectionString;
-            connStr = connectionString;
-            conn = new SqlConnection(connStr);
-            conn.Open();
-            InitializeComponent();
-            QueryFunc();
-            comboBox1.SelectedIndex = 0;
+            //var connectionString = ConfigurationManager.ConnectionStrings["default"].ConnectionString;
+            //connStr = connectionString;
+            //conn = new SqlConnection(connStr);
+            //conn.Open();
+            //InitializeComponent();
+            //QueryFunc();
+            //comboBox1.SelectedIndex = 0;
 
             
-            comboBox2.DataSource = products.Select(s=>s.ProductType).Distinct().ToList();
-            comboBox2.DisplayMember = "ProductType";
+            //comboBox2.DataSource = products.Select(s=>s.ProductType).Distinct().ToList();
+            //comboBox2.DisplayMember = "ProductType";
 
-            comboBox3.DataSource = products.Select(s => s.Supplier).Distinct().ToList();
-            comboBox3.DisplayMember = "Supplier";
+            //comboBox3.DataSource = products.Select(s => s.Supplier).Distinct().ToList();
+            //comboBox3.DisplayMember = "Supplier";
         }
 
         void QueryFunc()
@@ -213,12 +229,34 @@ namespace WarehouseManager
                     DeliveryDate = u.DeliveryDate,
                 }).Where(s => s.DeliveryDate == min).ToList();
             }
+
+            if (comboBox1.Text == "Среденее по категориям")
+            {
+
+                //string query1 = "SELECT c.ProductType as [Product Category], AVG(c.Quantity) as [Average quantity of goods]" +
+                //                "from Products c group by c.ProductType";
+                //conn.Open();
+                //SqlDataAdapter da = new SqlDataAdapter(query1, conn);
+                //DataSet dataSet = new DataSet();
+                //da.Fill(dataSet);
+                //dataGridView1.DataSource = null;
+                //dataGridView1.DataSource = dataSet.Tables[0];
+                //conn.Close();
+
+                var ave = products.GroupBy(c => c.ProductType).Select(
+                    g => new
+                    {
+                        ProductCategory = g.Key,
+                        AverageQuantityOfGoods = g.Average(p => p.Quantity)
+                    }).ToList();
+                dataGridView1.DataSource = null;
+                dataGridView1.DataSource = ave;
+            }
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            dataGridView2.DataSource = null;
-            var que = products.Where(s => s.ProductType == (comboBox2.SelectedItem as Product)?.ProductType).Select(
+            var que = products.Select(
                 u => new
                 {
                     Name = u.Name,
@@ -227,14 +265,15 @@ namespace WarehouseManager
                     Quantity = u.Quantity,
                     Price = u.Price,
                     DeliveryDate = u.DeliveryDate,
-                }).ToList();
+                }).Where(s => s.ProductType == (string)comboBox2.SelectedItem).ToList();
+            dataGridView2.DataSource = null;
             dataGridView2.DataSource = que;
         }
 
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
             dataGridView2.DataSource = null;
-            var que = products.Where(s => s.Supplier == (comboBox3.SelectedItem as Product)?.Supplier).Select(
+            var que = products.Where(s => s.Supplier == (string)comboBox3.SelectedItem).Select(
                 u => new
                 {
                     Name = u.Name,
